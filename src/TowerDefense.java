@@ -9,12 +9,14 @@ import javax.swing.JPanel;
 
 
 @SuppressWarnings("serial")
-public class TowerDefense extends JFrame{
+public class TowerDefense extends JFrame implements Runnable{
 
 	public static JPanel canvas;
 	
 	Cell[][] cells;
 	final int size = 50;
+
+	private PathFinder pathfinder;
 	
 	public TowerDefense() {
 		
@@ -22,14 +24,19 @@ public class TowerDefense extends JFrame{
 		int rows = height/50;
 		int cols = width/50;
 		
-		say(rows + " " + cols);
-		
 		cells = new Cell[rows][cols];
 		
 		for (int r=0; r < rows; r++)
 			for (int c=0; c < cols; c++)
 				cells[r][c] = new Cell(c*50,r*50,50);
 		
+		for (int i=0; i < rows-1;i++)
+			cells[i][1].setEmpty(false);
+		for (int i=1; i < rows;i++)
+			cells[i][3].setEmpty(false);
+		
+		for (int i=0; i < rows/2;i++)
+			cells[i][8].setEmpty(false);
 		
 		this.add(canvas = new JPanel(){
 			@Override
@@ -48,14 +55,37 @@ public class TowerDefense extends JFrame{
 			@Override
 			public void mousePressed(MouseEvent e) {
 				super.mousePressed(e);
+				
+				for (Cell[] row : cells)
+					for (Cell cell : row)
+						cell.click(e);
+				
+				for (Cell[] row : cells)
+					for (Cell cell : row)
+						cell.setPartOfPath(false);
+				
+				for (Slot slot : pathfinder.updateShortestPath().slots){
+					cells[slot.row][slot.col].setPartOfPath(true);
+				}
+				
 			}
 		});
+		
+		pathfinder = new PathFinder(cells, 0, 0, cells.length-1, cells[0].length-1);
+		Path shortest = pathfinder.updateShortestPath();
+		say(shortest);
+		
+		for (Slot slot : shortest.slots){
+			cells[slot.row][slot.col].setPartOfPath(true);
+		}
 		
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
+		
+		new Thread(this).start();
 	}
 	
 	public static void say(Object s){
@@ -64,6 +94,18 @@ public class TowerDefense extends JFrame{
 
 	public static void main(String[] args) {
 		new TowerDefense();
+	}
+
+	@Override
+	public void run() {
+		while (true){
+			repaint();
+			try {
+				Thread.sleep(20);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }

@@ -130,7 +130,7 @@ public class PathFinder
 	
 	long start;
 	
-	public void updateShortestPath(){
+	public Path updateShortestPath(){
 		
 		start = System.nanoTime();
 		ArrayList<Path> paths = new ArrayList<Path>();
@@ -140,9 +140,10 @@ public class PathFinder
 		shortestPath = null;
 
 		while (shortestPath == null && paths.size() != 0){
-		
+			
 			//say(paths);
 			for (Path path : paths){
+				say(path);
 				Slot slot = path.slots.get(path.slots.size()-1);
 				if (usedSlots.contains(slot))
 					continue;
@@ -180,6 +181,8 @@ public class PathFinder
 			paths = new ArrayList<Path>(nextGen);
 			nextGen.clear();
 		}
+		
+		return shortestPath;
 		
 	}
 	
