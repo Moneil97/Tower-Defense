@@ -56,16 +56,27 @@ public class TowerDefense extends JFrame implements Runnable{
 			public void mousePressed(MouseEvent e) {
 				super.mousePressed(e);
 				
-				for (Cell[] row : cells)
-					for (Cell cell : row)
-						cell.click(e);
+				Cell changed = null;
 				
 				for (Cell[] row : cells)
-					for (Cell cell : row)
-						cell.setPartOfPath(false);
+					for (Cell cell : row){
+						if (cell.click(e))
+							changed = cell;
+					}
 				
-				for (Slot slot : pathfinder.updateShortestPath().slots){
-					cells[slot.row][slot.col].setPartOfPath(true);
+				Path shortest = pathfinder.updateShortestPath();
+				
+				if (shortest != null){
+					for (Cell[] row : cells)
+						for (Cell cell : row)
+							cell.setPartOfPath(false);
+					
+					for (Slot slot : shortest.slots)
+						cells[slot.row][slot.col].setPartOfPath(true);
+					
+				}
+				else{
+					changed.click(e);
 				}
 				
 			}

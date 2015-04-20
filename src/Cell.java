@@ -42,10 +42,12 @@ public class Cell {
 		empty = b;
 	}
 
-	public void click(MouseEvent e) {
+	public boolean click(MouseEvent e) {
 		if (new Rectangle(x, y, size, size).contains(e.getPoint())){
 			empty = !empty;
+			return true;
 		}
+		return false;
 	}
 
 }

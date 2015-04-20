@@ -143,7 +143,7 @@ public class PathFinder
 			
 			//say(paths);
 			for (Path path : paths){
-				say(path);
+				//say(path);
 				Slot slot = path.slots.get(path.slots.size()-1);
 				if (usedSlots.contains(slot))
 					continue;
