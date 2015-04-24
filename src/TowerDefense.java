@@ -1,6 +1,9 @@
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -13,8 +16,9 @@ public class TowerDefense extends JFrame implements Runnable{
 
 	public static JPanel canvas;
 	
-	Cell[][] cells;
+	static Cell[][] cells;
 	final int size = 50;
+	Enemy enemy;
 
 	private PathFinder pathfinder;
 	
@@ -46,6 +50,8 @@ public class TowerDefense extends JFrame implements Runnable{
 				for (Cell[] row : cells)
 					for (Cell cell : row)
 						if (cell != null) cell.draw(g);
+				
+				if (enemy != null) enemy.draw(g);
 			}
 		});
 		
@@ -90,6 +96,26 @@ public class TowerDefense extends JFrame implements Runnable{
 			cells[slot.row][slot.col].setPartOfPath(true);
 		}
 		
+		
+		this.addKeyListener(new KeyAdapter() {
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+				
+				if (e.getKeyChar() == '0'){
+					enemy = new Enemy(pathfinder.shortestPath);
+				}
+				else if (e.getKeyChar() == '1'){
+					enemy.moveToNext();
+				}
+				else{
+					say(e.getKeyChar());
+				}
+				
+			}
+			
+			
+		});
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		pack();
