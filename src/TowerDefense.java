@@ -1,11 +1,10 @@
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -13,34 +12,33 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
 public class TowerDefense extends JFrame implements Runnable{
-
-	public static JPanel canvas;
 	
-	static Cell[][] cells;
-	final int size = 50;
-	Enemy enemy;
-
-	private PathFinder pathfinder;
+	JPanel canvas;
+	PathFinder pathFinder;
+	List<Cell> fastest;
+	int size = 50;
 	
-	public TowerDefense() {
+	public TowerDefense(){
 		
 		int width = 800, height = 600;
 		int rows = height/50;
 		int cols = width/50;
 		
-		cells = new Cell[rows][cols];
+		Cell[][] cells = new Cell[rows][cols];
 		
 		for (int r=0; r < rows; r++)
 			for (int c=0; c < cols; c++)
-				cells[r][c] = new Cell(c*50,r*50,50);
+				cells[r][c] = new Cell(c*size, r*size, r,c, size);
 		
 		for (int i=0; i < rows-1;i++)
-			cells[i][1].setEmpty(false);
+			cells[i][1].setType(CellTypes.BARRIER);
 		for (int i=1; i < rows;i++)
-			cells[i][3].setEmpty(false);
-		
+			cells[i][3].setType(CellTypes.BARRIER);
 		for (int i=0; i < rows/2;i++)
-			cells[i][8].setEmpty(false);
+			cells[i][8].setType(CellTypes.BARRIER);
+		
+		pathFinder = new PathFinder(cells, cells[0][0], cells[rows-1][cols-1], true, false);
+		fastest = pathFinder.calculateShortestPath();
 		
 		this.add(canvas = new JPanel(){
 			@Override
@@ -49,9 +47,20 @@ public class TowerDefense extends JFrame implements Runnable{
 				Graphics2D g = (Graphics2D) g1;
 				for (Cell[] row : cells)
 					for (Cell cell : row)
-						if (cell != null) cell.draw(g);
+						cell.draw(g);
 				
-				if (enemy != null) enemy.draw(g);
+				drawFastestPath(g);	
+			}
+			
+			private void drawFastestPath(Graphics2D g){
+				
+				if (fastest != null){
+					
+					g.setColor(Color.red);
+					
+					for (int i=0; i < fastest.size()-1; i++)
+						g.drawLine(fastest.get(i).x + size/2, fastest.get(i).y + size/2, fastest.get(i+1).x + size/2, fastest.get(i+1).y + size/2);
+				}
 			}
 		});
 		
@@ -62,58 +71,18 @@ public class TowerDefense extends JFrame implements Runnable{
 			public void mousePressed(MouseEvent e) {
 				super.mousePressed(e);
 				
-				Cell changed = null;
+				List<Cell> newFastest;
 				
 				for (Cell[] row : cells)
-					for (Cell cell : row){
-						if (cell.click(e))
-							changed = cell;
-					}
-				
-				Path shortest = pathfinder.updateShortestPath();
-				
-				if (shortest != null){
-					for (Cell[] row : cells)
-						for (Cell cell : row)
-							cell.setPartOfPath(false);
-					
-					for (Slot slot : shortest.slots)
-						cells[slot.row][slot.col].setPartOfPath(true);
-					
-				}
-				else{
-					changed.click(e);
-				}
-				
+					for (Cell cell : row)
+						if (cell.click(e)){
+							if ((newFastest = pathFinder.calculateShortestPath()) != null)
+								fastest = newFastest; //This may need to be cloned, but it seems to work fine without
+							else
+								cell.click(e);
+							break;
+						}
 			}
-		});
-		
-		pathfinder = new PathFinder(cells, 0, 0, cells.length-1, cells[0].length-1);
-		Path shortest = pathfinder.updateShortestPath();
-		say(shortest);
-		
-		for (Slot slot : shortest.slots){
-			cells[slot.row][slot.col].setPartOfPath(true);
-		}
-		
-		
-		this.addKeyListener(new KeyAdapter() {
-			
-			@Override
-			public void keyPressed(KeyEvent e) {
-				
-				if (e.getKeyChar() == '0'){
-					enemy = new Enemy(pathfinder.shortestPath);
-				}
-				else if (e.getKeyChar() == '1'){
-					enemy.moveToNext();
-				}
-				else{
-					say(e.getKeyChar());
-				}
-				
-			}
-			
 			
 		});
 		
@@ -124,7 +93,7 @@ public class TowerDefense extends JFrame implements Runnable{
 		
 		new Thread(this).start();
 	}
-	
+
 	public static void say(Object s){
 		System.out.println(s);
 	}
@@ -132,17 +101,22 @@ public class TowerDefense extends JFrame implements Runnable{
 	public static void main(String[] args) {
 		new TowerDefense();
 	}
-
+	
 	@Override
 	public void run() {
 		while (true){
-			repaint();
 			try {
+				repaint();
 				Thread.sleep(20);
-			} catch (InterruptedException e) {
+			}
+			catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 	}
-
+	
+//	private void print2D(Object[][] array){
+//	for (Object[] row : array)
+//		System.out.println(Arrays.toString(row));
+//}
 }

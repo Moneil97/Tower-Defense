@@ -1,350 +1,289 @@
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
+import java.util.PriorityQueue;
 
-public class PathFinder
-{
-	/**Holds matrix*/
-	private Cell[][] matrix;
-	/**Used by hasPath() to keep track of previously checked points*/
-	private ArrayList<Slot> marked = new ArrayList<Slot>();
-	protected PathManager pathManager = new PathManager();
-	protected Path shortestPath;
-	protected int startRow=-1, endRow=-1, startCol=-1, endCol=-1;
-	
-	public PathFinder(Cell[][] cells, int sr, int sc, int er, int ec)
-	{
-		matrix = cells;
-		setStart(sr,sc);
-		setEnd(er,ec);
-	}
-	
-	/**
-	 * Sets starting point
-	 * <br>Set to a negative number to ignore
-	 * <br>Ex: (2,-1) will have a starting point of the entire row 2
-	 * @param row row to check
-	 * @param col column to check
-	 */
-	
-	public void setStart(int row, int col){
-		startRow = row;
-		startCol = col;
-	}
-	
-	public void setStartRow(int row){
-		startRow = row;
-	}
-	
-	public void setStartCol(int col){
-		startCol = col;
-	}
-	
-	/**
-	 * Sets ending point
-	 * <br>Set to a negative number to ignore
-	 * <br>Ex: (2,-1) will have a starting point of the entire row 2
-	 * @param row row to check
-	 * @param col column to check
-	 */
-	
-	public void setEnd(int row, int col){
-		endRow = row;
-		endCol = col;
-	}
-	
-	public void setEndRow(int row){
-		endRow = row;
-	}
-	
-	public void setEndCol(int col){
-		endCol = col;
-	}
-	
-	/**
-	 * Quick check if there is an available path
-	 * @return true if has path
-	 */
-	
-	public boolean hasPath(){
-		marked.clear();
-		return hasPath(startRow, startCol);
-	}
+import javax.swing.JOptionPane;
 
+public class PathFinder{
+
+	Cell[][] grid;
+	Cell end, start;
+	List<Cell> shortest = new ArrayList<Cell>();
+	private boolean allowDiagonal, allowCornerCutting;
+	
 	/**
-	 * recursive function used by hasPath()
-	 * @param r row
-	 * @param c	col
-	 * @return true if has available path
+	 * Uses the A* Algorithm to find shortest path
+	 * @param grid 2D Array of Cells
+	 * @param start Starting Cell
+	 * @param end Ending Cell
+	 * @param allowDiagonal Allows shortest path to use diagonal movements
+	 * @param allowCornerCutting Allows shortest path to cut corners (Only affected if diagonal movements are allowed)
 	 */
 	
-	private boolean hasPath(int r, int c)
-	{
-		if (r>=0 && c>=0 && r<matrix.length && c < matrix.length && matrix[r][c].isEmpty() && !isMarked(r,c)){
-			if (isAtEnd(new Slot(r,c)))
-				return true;
-			mark(r,c);
-			return hasPath(r+1,c) || hasPath(r-1,c) || hasPath(r,c+1) || hasPath(r,c-1);
-		}
-		return false;
-	}
-	
-	private void mark(int r, int c){
-		marked.add(new Slot(r,c));
-	}
-	
-	private boolean isMarked(int r, int c){
-		return marked.contains(new Slot(r,c));
-	}
-	
-	public void updateAllPaths(){
-		pathManager.clear();
-		updateAllPaths(startRow,startCol, new ArrayList<Slot>());
-	}
-	
-	private void updateAllPaths(int r, int c, ArrayList<Slot> used){
+	public PathFinder(Cell[][] grid, Cell start, Cell end, boolean allowDiagonal, boolean allowCornerCutting) {
 		
-		if (r>=0 && c>=0 && r<matrix.length && c < matrix.length){
-			if (!used.contains(new Slot(r,c))){
-				if (matrix[r][c].isEmpty()){
+		setAllowDiagonal(allowDiagonal);
+		setAllowCornerCutting(allowCornerCutting);
+		
+		this.grid = grid;
+		
+		this.start = start;
+		
+		if (start == null){
+			JOptionPane.showMessageDialog(null, "No Available Start Point");
+			return;
+		}
+		
+		start.setType(CellTypes.START);
+		
+		this.end = end;
+		
+		if (end == null){
+			JOptionPane.showMessageDialog(null, "No Available End Point");
+			return;
+		}
+		
+		end.setType(CellTypes.END);
+		
+	}
+	
+	//gCost -dist from start //needs to get gCost of parent and add to it
+	//hCost -dist to end //should stay same
+	//fCost -total
+	
+	public List<Cell> calculateShortestPath(){
+		
+		for (Cell[] row : grid)
+			for (Cell cell : row)
+				cell.reset();
+		
+		PriorityQueue<Cell> open = new PriorityQueue<Cell>();
+		List<Cell> closed = new ArrayList<Cell>();
+		
+		long startTime = System.nanoTime();
+
+		start.gCost = 0;
+		start.hCost = getCostBetween(start, end);
+		open.add(start);
+
+		while (true){
+		
+			Cell current = open.poll();
+			
+			if (current == null){
+				//JOptionPane.showMessageDialog(null, "No Path Found");
+				return null;
+			}
+			
+			closed.add(current);
+			
+			if (current.getType() == CellTypes.END){
+				
+				shortest.clear();
+				
+				Cell cell = end;
+				shortest.add(end);
+				
+				do{
 					
-					used.add(new Slot(r,c));
-					if (isAtEnd(new Slot(r,c))){
-						pathManager.add(new Path(used));
-						return;
+					cell = cell.parentCell;
+					shortest.add(0, cell);
+
+				}while(cell.parentCell != null);
+				
+				
+				say("It took: " + ((System.nanoTime() - startTime)/1000000000.0) + " sec");
+				
+				return shortest;
+			}
+			
+			if (allowDiagonal){
+				for (int r=Math.max(0, current.getRow()-1); r <= Math.min(grid.length-1, current.getRow()+1); r++){
+					for (int c=Math.max(0, current.getCol()-1); c <= Math.min(grid[r].length-1 ,current.getCol()+1); c++){
+						
+						Cell neighbor = grid[r][c];
+						
+						if (!allowCornerCutting && checkIfCorner(current, neighbor))
+							continue;
+						
+						updateCosts(current, neighbor, open, closed);
 					}
-					
-					updateAllPaths(r,c+1, new ArrayList<Slot>(used));
-					updateAllPaths(r,c-1, new ArrayList<Slot>(used));
-					updateAllPaths(r+1,c, new ArrayList<Slot>(used));
-					updateAllPaths(r-1,c, new ArrayList<Slot>(used));
 				}
 			}
+			else{
+				
+				int row = current.getRow();
+				int col = current.getCol();
+				
+				int rs[] = {row,row,row+1,row-1};
+				int cs[] = {col+1,col-1,col,col};
+					
+				for (int i=0; i < 4; i++){
+					
+					int r = rs[i];
+					int c = cs[i];
+				
+					if (r < 0 || r > grid.length-1 || c < 0 || c > grid[r].length-1)
+						continue;
+					
+						Cell neighbor = grid[r][c];
+						
+						updateCosts(current, neighbor, open, closed);
+					
+				}
+				
+			}
+			
+		}
+		
+	}
+	
+	private void updateCosts(Cell current, Cell neighbor, PriorityQueue<Cell> open, List<Cell> closed){
+		if ((neighbor.getType() == CellTypes.EMPTY || neighbor.getType() == CellTypes.END) && !closed.contains(neighbor)){
+			
+			neighbor.hCost = getCostBetween(neighbor, end);
+			
+			double newGCost = current.gCost + getCostBetween(current, neighbor);
+			if (neighbor.gCost > newGCost){
+				neighbor.gCost = newGCost;
+				neighbor.parentCell = current;
+				if (!open.contains(neighbor))
+					open.add(neighbor);
+			}
+			
+			open.remove(neighbor);
+			neighbor.fCost = neighbor.gCost + neighbor.hCost;
+			open.add(neighbor);
+			
 		}
 	}
-	
-	public void sortAllPaths(){
-		pathManager.sort();
-	}
-	
-	
-	long start;
-	
-	public Path updateShortestPath(){
-		
-		start = System.nanoTime();
-		ArrayList<Path> paths = new ArrayList<Path>();
-		paths.add(new Path(new Slot(startRow, startCol)));
-		ArrayList<Path> nextGen = new ArrayList<Path>();
-		ArrayList<Slot> usedSlots = new ArrayList<Slot>();
-		shortestPath = null;
 
-		while (shortestPath == null && paths.size() != 0){
-			
-			//say(paths);
-			for (Path path : paths){
-				//say(path);
-				Slot slot = path.slots.get(path.slots.size()-1);
-				if (usedSlots.contains(slot))
-					continue;
-				else
-					usedSlots.add(slot);
-				
-				if (isAtEnd(slot)){
-					shortestPath = path;
-					say("----Made it! ----" + shortestPath);
-					say("It took: " + (System.nanoTime() - start)/1000000000.0 + " seconds");
+	private boolean checkIfCorner(Cell current, Cell neighbor) {
+		
+		List<Cell> currentBarriers = new ArrayList<Cell>();
+		
+		for (Cell cell : getAdjacent(current)){
+			if (cell.getType() == CellTypes.BARRIER)
+				currentBarriers.add(cell);
+		}
+		
+		if (currentBarriers.size() < 1)
+			return false;
+		
+		List<Cell> neighborBarriers = new ArrayList<Cell>();
+		
+		for (Cell cell : getAdjacent(neighbor)){
+			if (cell.getType() == CellTypes.BARRIER)
+				neighborBarriers.add(cell);
+		}
+		
+		if (neighborBarriers.size() < 1)
+			return false;
+		
+		int similar = 0;
+		
+		for (Cell a : currentBarriers)
+			for (Cell b : neighborBarriers)
+				if (a == b){
+					similar++;
+					if (similar >= 1)
+						return true;
 					break;
 				}
-				
-				if (slot.col < matrix[slot.row].length-1 && matrix[slot.row][slot.col+1].isEmpty()){
-					Path temp = new Path(path.slots);
-					temp.add(new Slot(slot.row,slot.col+1));
-					nextGen.add(temp);
-				}
-				if (slot.row < matrix.length-1 && matrix[slot.row+1][slot.col].isEmpty()){
-					Path temp = new Path(path.slots);
-					temp.add(new Slot(slot.row+1,slot.col));
-					nextGen.add(temp);
-				}
-				if (slot.row > 0 && matrix[slot.row-1][slot.col].isEmpty()){
-					Path temp = new Path(path.slots);
-					temp.add(new Slot(slot.row-1,slot.col));
-					nextGen.add(temp);
-				}
-				if (slot.col > 0 && matrix[slot.row][slot.col-1].isEmpty() ){
-					Path temp = new Path(path.slots);
-					temp.add(new Slot(slot.row,slot.col-1));
-					nextGen.add(temp);
+		
+		return false;
+		
+	}
+	
+	private List<Cell> getAdjacent(Cell cell){
+		List<Cell> cells = new ArrayList<Cell>();
+		int row = cell.getRow(), col = cell.getCol();
+		
+		int r[] = {row,row,row+1,row-1};
+		int c[] = {col+1,col-1,col,col};
+			
+			for (int i=0; i < 4; i++)
+				if (r[i] >= 0 && r[i] < grid.length && c[i] >= 0 && c[i] < grid[r[i]].length)
+					cells.add(grid[r[i]][c[i]]);
+		
+		return cells;
+	}
+	
+	private double getCostBetween(Cell a, Cell b){
+		int height = Math.abs(a.getRow() - b.getRow());
+		int length = Math.abs(a.getCol() - b.getCol());
+		double distance = Math.sqrt(length*length + height*height);
+		return distance;
+	}
+	
+	public boolean quickHasPath(){
+		List<Cell> open = new ArrayList<Cell>();
+		List<Cell> closed = new ArrayList<Cell>();
+		
+		long startTime = System.nanoTime();
+
+		start.gCost = 0;
+		start.hCost = getCostBetween(start, end);
+		open.add(start);
+
+		while (true){
+		
+			if (open.isEmpty())
+				return false;
+			
+			Cell current = open.remove(0);
+
+			closed.add(current);
+			
+			if (current.getType() == CellTypes.END){
+				say("It took: " + ((System.nanoTime() - startTime)/1000000000.0) + " sec");
+				return true;
+			}
+			
+			for (int r=Math.max(0, current.getRow()-1); r <= Math.min(grid.length-1, current.getRow()+1); r++){
+				for (int c=Math.max(0, current.getCol()-1); c <= Math.min(grid[r].length-1 ,current.getCol()+1); c++){
+					
+					Cell neighbor = grid[r][c];
+					
+					if (allowDiagonal && !allowCornerCutting && checkIfCorner(current, neighbor))
+						continue;
+					
+					if ((neighbor.getType() == CellTypes.EMPTY || neighbor.getType() == CellTypes.END) && !closed.contains(neighbor)){
+						
+						if (!open.contains(neighbor))
+							open.add(neighbor);
+						
+					}
 				}
 			}
-			paths = new ArrayList<Path>(nextGen);
-			nextGen.clear();
+			
 		}
-		
-		return shortestPath;
-		
 	}
 	
-	public boolean isAtEnd(Slot slot){
-		return isAtEnd(slot.row, slot.col);
-	}
 	
-	public boolean isAtEnd(int r, int c){
-		return ((endCol >= 0 && c == endCol && endRow < 0) || (endRow >= 0 && r == endRow && endCol < 0) || (endRow >= 0 && r == endRow && endCol >= 0 && c == endCol));
-	}
-	
-	public static void say(Object s){
-		System.out.println(s);
-	}
-	
-	public String toString()
-	{
-		String out = "";
-		
-		for (Cell [] m : matrix)
-			out += Arrays.toString(m) + "\n";
-		
-		return out;
-	}
-}
-
-class PathManager{
-	
-	ArrayList<Path> paths;
-	
-	public PathManager() {
-		paths = new ArrayList<Path>();
-	}
-	
-	public void add(Path path){
-		paths.add(path);
-	}
-	
-	public void clear() {
-		paths.clear();
-	}
-	
-	public void sort(){
-		Collections.sort(paths);
-	}
-	
-	@Override
-	public String toString() {
-		
-		String out = "Paths: \n";
-		
-		for (Path path : paths)
-			//out += "[" + path.toString()+"]\n";
-			out += path.fancyToString()+"\n\n";
-		
-		return out;
-	}
-	
-}
-
-class Path implements Comparable<Path>{
-	
-	public ArrayList<Slot> slots;
-	
-	public Path(Slot slot) {
-		slots = new ArrayList<Slot>();
-		slots.add(slot);
-	}
-	
-	public Path(ArrayList<Slot> used) {
-		slots = new ArrayList<Slot>(used);
-	}
-	
-	public Path(ArrayList<Slot> used, Slot slot) {
-		slots = new ArrayList<Slot>(used);
-		slots.add(slot);
+	boolean isAllowDiagonal() {
+		return allowDiagonal;
 	}
 
-	public void add(Slot slot){
-		slots.add(slot);
+	void setAllowDiagonal(boolean allowDiagonal) {
+		this.allowDiagonal = allowDiagonal;
 	}
-	
-	public boolean contains(Slot slot){
-		return slots.contains(slot);
-	}
-	
-	public int getSize(){
-		return slots.size();
-	}
-	
-	@Override
-	public int compareTo(Path other) {
-		return (this.getSize() == other.getSize()? 0: (this.getSize() < other.getSize() ? -1: 1));
-	}
-	
-	public String fancyToString(){
-		
-		int largestRow=1, largestCol=1;
-		
-		for (Slot slot : slots){
-			largestRow = Math.max(largestRow, slot.row+1);
-			largestCol = Math.max(largestCol, slot.col+1);
-		}
-		
-		int matrix[][] = new int[largestRow][largestCol];
-		for (int i=0; i <matrix.length; i++)
-			Arrays.fill(matrix[i], 0);
-		
-		int x=0;
-		for (Slot slot : slots){
-			matrix[slot.row][slot.col] = ++x;
-			if (x > 122-48)
-				x=0;
-		}
-		
-		String out = "";
 
-		for (int[] row : matrix){
-			//out+= Arrays.toString(row) + "\n";
-			for (int col : row){
-				if (col == 0) out += "* ";
-				else out+=(char)(col+48) + " ";//Integer.toUnsignedString(col, 32) + " ";
-			}
-			out+= "\n";
-		}
-		
-		return out = out.substring(0, out.length());
+	boolean isAllowCornerCutting() {
+		return allowCornerCutting;
 	}
-	
-	@Override
-	public String toString() {
-		
-		String out = "Path: {";
-		
-		for (Slot s : slots)
-			out+= s.toString() + ", ";
-		
-		out = out.substring(0, out.length()-2) + "} size: " + slots.size();
-		
-		return out;
-	}
-	
-}
 
-class Slot{
+	void setAllowCornerCutting(boolean allowCornerCutting) {
+		this.allowCornerCutting = allowCornerCutting;
+	}
 	
-	public int row;
-	public int col;
+	public void say(Object s) {
+		System.out.println(this.getClass().getName() + ": " + s);
+	}
+	
+//	private void print2D(Object[][] array){
+//	for (Object[] row : array)
+//	    System.out.println(Arrays.toString(row));
+//}
 
-	public Slot(int r, int c){
-		this.row = r;
-		this.col = c;
-	}
-	
-	@Override
-	public boolean equals(Object paramObject) {
-		Slot other = (Slot)paramObject;
-		return row == other.row && col == other.col; 
-	}
-	
-	@Override
-	public String toString() {
-		return "[" + row + "][" + col + "]";
-	}
 }

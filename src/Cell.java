@@ -3,51 +3,92 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 
-public class Cell {
+public class Cell implements Comparable<Cell>{
 
 	int x, y, size;
-	boolean partOfPath = false;
-
-	public Cell(int x, int y) {
-		this(x,y,50);
-	}
+	private CellTypes type = CellTypes.EMPTY;
+	private int row;
+	private int col;
+	double gCost = Double.MAX_VALUE, hCost = Double.MAX_VALUE, fCost = Double.MAX_VALUE;
+	Cell parentCell;
 	
-	public Cell(int x, int y, int size) {
+	public Cell(int x, int y, int row, int col, int size) {
 		this.x = x;
 		this.y = y;
+		this.setRow(row);
+		this.setCol(col);
 		this.size = size;
 	}
 	
 	public void draw(Graphics2D g){
-		g.setColor(partOfPath? Color.blue: !empty? Color.orange:Color.white);
-		if (partOfPath || !empty)
-			g.fillRect(x, y, size, size);
-		else
-			g.fillRect(x, y, size, size);
+		
+		g.setColor(type.color);
+		g.fillRect(x, y, size, size);
 		g.setColor(Color.black);
 		g.drawRect(x, y, size, size);
+		
 	}
-
-	public boolean isEmpty() {
-		return empty;
-	}
-
-	boolean empty = true;
 	
-	public void setPartOfPath(boolean b) {
-		partOfPath = b;
+	public CellTypes getType() {
+		return type;
 	}
 
-	public void setEmpty(boolean b) {
-		empty = b;
+	public void setType(CellTypes type) {
+		this.type = type;
+	}
+	
+	public boolean contains(MouseEvent e) {
+		return new Rectangle(x, y, size, size).contains(e.getPoint());
+	}
+
+	public int getRow() {
+		return row;
+	}
+
+	public void setRow(int row) {
+		this.row = row;
+	}
+
+	public int getCol() {
+		return col;
+	}
+
+	public void setCol(int col) {
+		this.col = col;
+	}
+	
+	@Override
+	public String toString() {
+		
+		return "Cell: [row: " + row + " col: " + col + "type: " + type + "]";
+//		return "Cell: [x: " + x + " y: " + y + " row: " + row + " col: " + col + " type: " + type + " gCost: " + gCost + " hCost: " + hCost + " fCost: " + fCost + "]";
+	}
+	
+	public void reset(){
+		gCost = hCost = fCost = Double.MAX_VALUE;
+	}
+
+	@Override
+	public int compareTo(Cell other) {
+		if (other.fCost > this.fCost)
+			return -1;
+		if (other.fCost < this.fCost)
+			return 1;
+		
+		return 0;
 	}
 
 	public boolean click(MouseEvent e) {
+		
 		if (new Rectangle(x, y, size, size).contains(e.getPoint())){
-			empty = !empty;
+			if (type == CellTypes.EMPTY)
+				type = CellTypes.BARRIER;
+			else if (type == CellTypes.BARRIER)
+				type = CellTypes.EMPTY;
 			return true;
 		}
 		return false;
+		
 	}
 
 }
