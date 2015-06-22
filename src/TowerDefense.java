@@ -39,6 +39,7 @@ public class TowerDefense extends JFrame implements Runnable{
 		
 		pathFinder = new PathFinder(cells, cells[0][0], cells[rows-1][cols-1], true, false);
 		fastest = pathFinder.calculateShortestPath();
+		bob = new Enemy(0, 0, fastest);
 		
 		this.add(canvas = new JPanel(){
 			@Override
@@ -48,6 +49,8 @@ public class TowerDefense extends JFrame implements Runnable{
 				for (Cell[] row : cells)
 					for (Cell cell : row)
 						cell.draw(g);
+				
+				bob.draw(g);
 				
 				drawFastestPath(g);	
 			}
@@ -102,10 +105,14 @@ public class TowerDefense extends JFrame implements Runnable{
 		new TowerDefense();
 	}
 	
+	
+	Enemy bob;
+	
 	@Override
 	public void run() {
 		while (true){
 			try {
+				bob.move();
 				repaint();
 				Thread.sleep(20);
 			}
