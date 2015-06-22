@@ -2,6 +2,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -39,7 +41,7 @@ public class TowerDefense extends JFrame implements Runnable{
 		
 		pathFinder = new PathFinder(cells, cells[0][0], cells[rows-1][cols-1], true, false);
 		fastest = pathFinder.calculateShortestPath();
-		bob = new Enemy(0, 0, fastest);
+//		bob = new Enemy(0, 0, fastest);
 		
 		this.add(canvas = new JPanel(){
 			@Override
@@ -50,7 +52,7 @@ public class TowerDefense extends JFrame implements Runnable{
 					for (Cell cell : row)
 						cell.draw(g);
 				
-				bob.draw(g);
+				if (bob != null) bob.draw(g);
 				
 				drawFastestPath(g);	
 			}
@@ -89,6 +91,27 @@ public class TowerDefense extends JFrame implements Runnable{
 			
 		});
 		
+		
+		addKeyListener(new KeyListener() {
+			
+			@Override
+			public void keyTyped(KeyEvent e) {
+				bob = new Enemy(0, 0, fastest);
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		pack();
 		setLocationRelativeTo(null);
@@ -112,7 +135,7 @@ public class TowerDefense extends JFrame implements Runnable{
 	public void run() {
 		while (true){
 			try {
-				bob.move();
+				if (bob != null) bob.move();
 				repaint();
 				Thread.sleep(20);
 			}

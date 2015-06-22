@@ -19,26 +19,49 @@ public class Enemy {
 		setCurrentPath(path);
 	}
 	
+	private void updateTarget(){
+		if (targetCounter < currentPath.size()-1)
+			target = currentPath.get(++targetCounter);
+		else
+			System.out.println("you win");
+	}
+	
 	public void move(){
 		
 		int targetX = target.x + target.size/2;
 		int targetY = target.y + target.size/2;
 		
 		if (x == targetX && y == targetY)
-			if (targetCounter < currentPath.size()-1)
-				target = currentPath.get(++targetCounter);
-			else
-				System.out.println("you win");
+			updateTarget();
 		
 		if (x != targetX && y != targetY){
-			x += Math.min(getXDirection(targetX) * speed / diag , Math.abs(targetX - x));
-			y += Math.min(getYDirection(targetY) * speed / diag , Math.abs(targetY - y));
+
+			if (Math.abs(getXDirection(targetX) * speed / diag) >= Math.abs(targetX - x))
+				x+= targetX - x;
+			else
+				x+=getXDirection(targetX) * speed / diag;
+			
+			if (Math.abs(getYDirection(targetY) * speed / diag) >= Math.abs(targetY - y))
+				y+= targetY - y;
+			else
+				y+=getYDirection(targetY) * speed / diag;
+			
 		}
 		else if (x != targetX){
-			x += Math.min(getXDirection(targetX) * speed , Math.abs(targetX - x));
+			
+			if (Math.abs(getXDirection(targetX) * speed) >= Math.abs(targetX - x))
+				x+= targetX - x;
+			else
+				x+=getXDirection(targetX) * speed;
+			
 		}
 		else{
-			y += Math.min(getYDirection(targetY) * speed , Math.abs(targetY - y));
+			
+			if (Math.abs(getYDirection(targetY) * speed) >= Math.abs(targetY - y))
+				y+= targetY - y;
+			else
+				y+=getYDirection(targetY) * speed;
+			
 		}
 		
 	}
