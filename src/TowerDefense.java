@@ -20,6 +20,7 @@ public class TowerDefense extends JFrame implements Runnable{
 	PathFinder pathFinder;
 	List<Cell> fastest;
 	int size = 50;
+	Cell[][] cells;
 	
 	public TowerDefense(){
 		
@@ -27,7 +28,7 @@ public class TowerDefense extends JFrame implements Runnable{
 		int rows = height/50;
 		int cols = width/50;
 		
-		Cell[][] cells = new Cell[rows][cols];
+		cells = new Cell[rows][cols];
 		
 		for (int r=0; r < rows; r++)
 			for (int c=0; c < cols; c++)
@@ -41,6 +42,9 @@ public class TowerDefense extends JFrame implements Runnable{
 			cells[i][3].setType(CellTypes.BARRIER);
 		for (int i=0; i < rows/2;i++)
 			cells[i][8].setType(CellTypes.BARRIER);
+		
+		cells[1][3].tower = new Gunner(cells[1][3]);
+		
 		
 		pathFinder = new PathFinder(cells, cells[0][0], cells[rows-1][cols-1], true, false);
 		fastest = pathFinder.calculateShortestPath();
@@ -131,7 +135,7 @@ public class TowerDefense extends JFrame implements Runnable{
 		new TowerDefense();
 	}
 	
-	List<Enemy> enemies = new ArrayList<Enemy>();
+	static List<Enemy> enemies = new ArrayList<Enemy>();
 	
 	@Override
 	public void run() {
@@ -151,7 +155,12 @@ public class TowerDefense extends JFrame implements Runnable{
 						continue;
 					}
 				}
-					
+				
+				for (Cell[] row : cells)
+					for (Cell cell : row){
+						if (cell.hasTower())
+							cell.tower.update();
+					}
 				
 				repaint();
 				Thread.sleep(20);

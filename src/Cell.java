@@ -11,6 +11,8 @@ public class Cell implements Comparable<Cell>{
 	private int col;
 	double gCost = Double.MAX_VALUE, hCost = Double.MAX_VALUE, fCost = Double.MAX_VALUE;
 	Cell parentCell;
+	Tower tower;
+	//boolean hasTower = false;
 	
 	public Cell(int x, int y, int row, int col, int size) {
 		this.x = x;
@@ -27,8 +29,15 @@ public class Cell implements Comparable<Cell>{
 		g.setColor(Color.black);
 		g.drawRect(x, y, size, size);
 		
+		if (hasTower())
+			tower.draw(g);
+		
 	}
 	
+	boolean hasTower() {
+		return tower != null;
+	}
+
 	public CellTypes getType() {
 		return type;
 	}

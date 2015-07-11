@@ -9,7 +9,7 @@ public class Enemy {
 	private List<Cell> currentPath;
 	private int x = 0, y = 0;
 	private int size = 20;
-	private int speed = 5;
+	private int speed = 2;
 	private Cell target;
 	static Cell finalCell;
 	private boolean finalCellActivated = false;
@@ -17,8 +17,8 @@ public class Enemy {
 	private boolean atEnd = false, dead = false;;
 	
 	public Enemy(int x, int y, List<Cell> path){
-		this.x = x;
-		this.y = y;
+		this.setX(x);
+		this.setY(y);
 		setCurrentPath(path);
 	}
 	
@@ -44,50 +44,50 @@ public class Enemy {
 		int targetX = target.x + target.size/2;
 		int targetY = target.y + target.size/2;
 		
-		if (x == targetX && y == targetY)
+		if (getX() == targetX && getY() == targetY)
 			updateTarget();
 		
-		if (x != targetX && y != targetY){
+		if (getX() != targetX && getY() != targetY){
 
-			if (Math.abs(getXDirection(targetX) * speed / diag) >= Math.abs(targetX - x))
-				x+= targetX - x;
+			if (Math.abs(getXDirection(targetX) * speed / diag) >= Math.abs(targetX - getX()))
+				setX(getX() + targetX - getX());
 			else
-				x+=getXDirection(targetX) * speed / diag;
+				setX((int) (getX() + getXDirection(targetX) * speed / diag));
 			
-			if (Math.abs(getYDirection(targetY) * speed / diag) >= Math.abs(targetY - y))
-				y+= targetY - y;
+			if (Math.abs(getYDirection(targetY) * speed / diag) >= Math.abs(targetY - getY()))
+				setY(getY() + targetY - getY());
 			else
-				y+=getYDirection(targetY) * speed / diag;
+				setY((int) (getY() + getYDirection(targetY) * speed / diag));
 			
 		}
-		else if (x != targetX){
+		else if (getX() != targetX){
 			
-			if (Math.abs(getXDirection(targetX) * speed) >= Math.abs(targetX - x))
-				x+= targetX - x;
+			if (Math.abs(getXDirection(targetX) * speed) >= Math.abs(targetX - getX()))
+				setX(getX() + targetX - getX());
 			else
-				x+=getXDirection(targetX) * speed;
+				setX(getX() + getXDirection(targetX) * speed);
 			
 		}
 		else{
 			
-			if (Math.abs(getYDirection(targetY) * speed) >= Math.abs(targetY - y))
-				y+= targetY - y;
+			if (Math.abs(getYDirection(targetY) * speed) >= Math.abs(targetY - getY()))
+				setY(getY() + targetY - getY());
 			else
-				y+=getYDirection(targetY) * speed;
+				setY(getY() + getYDirection(targetY) * speed);
 			
 		}
 		
 	}
 
 	private int getXDirection(int targetX) {
-		if (targetX > x)
+		if (targetX > getX())
 			return 1;
 		else 
 			return -1;
 	}
 	
 	private int getYDirection(int targetY) {
-		if (targetY > y)
+		if (targetY > getY())
 			return 1;
 		else 
 			return -1;
@@ -95,7 +95,7 @@ public class Enemy {
 
 	public void draw(Graphics2D g){
 		g.setColor(Color.orange);
-		g.fillRect(x-size/2, y-size/2, size, size);
+		g.fillRect(getX()-size/2, getY()-size/2, size, size);
 	}
 
 	List<Cell> getCurrentPath() {
@@ -122,6 +122,22 @@ public class Enemy {
 
 	public void setDead(boolean dead) {
 		this.dead = dead;
+	}
+
+	public int getX() {
+		return x;
+	}
+
+	public void setX(int x) {
+		this.x = x;
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public void setY(int y) {
+		this.y = y;
 	}
 	
 	
