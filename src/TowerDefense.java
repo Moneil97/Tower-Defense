@@ -33,6 +33,8 @@ public class TowerDefense extends JFrame implements Runnable{
 			for (int c=0; c < cols; c++)
 				cells[r][c] = new Cell(c*size, r*size, r,c, size);
 		
+		Enemy.finalCell = new Cell(cols*size, rows*size, rows,cols, size);
+		
 		for (int i=0; i < rows-1;i++)
 			cells[i][1].setType(CellTypes.BARRIER);
 		for (int i=1; i < rows;i++)
@@ -135,8 +137,21 @@ public class TowerDefense extends JFrame implements Runnable{
 	public void run() {
 		while (true){
 			try {
-				for (Enemy enemy : enemies)
+				for (int i =0; i < enemies.size(); i++){
+					Enemy enemy = enemies.get(i);
 					enemy.move();
+					if (enemy.isAtEnd()){
+						System.out.println("-1 life");
+						enemies.remove(i);
+						continue;
+					}
+					else if (enemy.isDead()){
+						System.out.println("good job");
+						enemies.remove(i);
+						continue;
+					}
+				}
+					
 				
 				repaint();
 				Thread.sleep(20);

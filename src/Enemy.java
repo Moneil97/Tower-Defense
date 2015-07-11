@@ -11,7 +11,10 @@ public class Enemy {
 	private int size = 20;
 	private int speed = 5;
 	private Cell target;
+	static Cell finalCell;
+	private boolean finalCellActivated = false;
 	private int targetCounter = 0;
+	private boolean atEnd = false, dead = false;;
 	
 	public Enemy(int x, int y, List<Cell> path){
 		this.x = x;
@@ -22,8 +25,18 @@ public class Enemy {
 	private void updateTarget(){
 		if (targetCounter < currentPath.size()-1)
 			target = currentPath.get(++targetCounter);
-		else
-			System.out.println("you win");
+		else{
+			if (!finalCellActivated){
+				finalCellActivated = true;
+				target = finalCell;
+			}
+			else{
+//				System.out.println("you lose");
+				atEnd  = true;
+				
+			}
+		}
+			//System.out.println("you win");
 	}
 	
 	public void move(){
@@ -93,6 +106,22 @@ public class Enemy {
 		targetCounter = 0;
 		this.currentPath = currentPath;
 		target = currentPath.get(0);
+	}
+
+	public boolean isAtEnd() {
+		return atEnd;
+	}
+
+	public void setAtEnd(boolean atEnd) {
+		this.atEnd = atEnd;
+	}
+
+	public boolean isDead() {
+		return dead;
+	}
+
+	public void setDead(boolean dead) {
+		this.dead = dead;
 	}
 	
 	
