@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -41,7 +42,6 @@ public class TowerDefense extends JFrame implements Runnable{
 		
 		pathFinder = new PathFinder(cells, cells[0][0], cells[rows-1][cols-1], true, false);
 		fastest = pathFinder.calculateShortestPath();
-//		bob = new Enemy(0, 0, fastest);
 		
 		this.add(canvas = new JPanel(){
 			@Override
@@ -52,7 +52,8 @@ public class TowerDefense extends JFrame implements Runnable{
 					for (Cell cell : row)
 						cell.draw(g);
 				
-				if (bob != null) bob.draw(g);
+				for (Enemy enemy : enemies)
+					enemy.draw(g); 
 				
 				drawFastestPath(g);	
 			}
@@ -96,7 +97,7 @@ public class TowerDefense extends JFrame implements Runnable{
 			
 			@Override
 			public void keyTyped(KeyEvent e) {
-				bob = new Enemy(0, 0, fastest);
+				enemies.add(new Enemy(0, 0, fastest));
 			}
 			
 			@Override
@@ -128,14 +129,15 @@ public class TowerDefense extends JFrame implements Runnable{
 		new TowerDefense();
 	}
 	
-	
-	Enemy bob;
+	List<Enemy> enemies = new ArrayList<Enemy>();
 	
 	@Override
 	public void run() {
 		while (true){
 			try {
-				if (bob != null) bob.move();
+				for (Enemy enemy : enemies)
+					enemy.move();
+				
 				repaint();
 				Thread.sleep(20);
 			}
