@@ -10,6 +10,7 @@ public class Enemy {
 	private int x = 0, y = 0;
 	private int size = 20;
 	private int speed = 5;
+	int health = 100;
 	private Cell target;
 	static Cell finalCell;
 	private boolean finalCellActivated = false;

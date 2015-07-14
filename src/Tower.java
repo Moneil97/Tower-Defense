@@ -64,6 +64,7 @@ class Gunner extends Tower{
 		for (Enemy enemy : TowerDefense.enemies)
 			if (enemyInRange(enemy)){
 				color = Color.green;
+				bullets.add(new Projectile(center.x, center.y));
 				//System.out.println("In range");
 			}
 		
