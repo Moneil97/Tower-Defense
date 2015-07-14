@@ -1,6 +1,8 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.List;
 
 abstract public class Tower {
 
@@ -9,10 +11,7 @@ abstract public class Tower {
 	protected int y, size;
 	protected Point center;
 	Color color = Color.blue;
-	
-//	public Tower(int x, int y, int range) {
-//		// TODO Auto-generated constructor stub
-//	}
+	List<Projectile> bullets = new ArrayList<Projectile>();
 	
 	public Tower(Cell c, int range) {
 		x = c.x;
@@ -41,6 +40,7 @@ abstract public class Tower {
 class Gunner extends Tower{
 	
 	static final int GUNNER_RANGE = 75;
+	
 
 	public Gunner(Cell c) {
 		super(c, GUNNER_RANGE);
