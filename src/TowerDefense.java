@@ -21,6 +21,7 @@ public class TowerDefense extends JFrame implements Runnable{
 	List<Cell> fastest;
 	int size = 50;
 	Cell[][] cells;
+	protected boolean spawnEnemyWhenAvailable = false;
 	
 	public TowerDefense(){
 		
@@ -57,6 +58,11 @@ public class TowerDefense extends JFrame implements Runnable{
 				for (Cell[] row : cells)
 					for (Cell cell : row)
 						cell.draw(g);
+				
+				for (Cell[] row : cells)
+					for (Cell cell : row)
+						if (cell.hasTower())
+							cell.tower.draw(g);
 				
 				for (Enemy enemy : enemies)
 					enemy.draw(g); 
@@ -103,7 +109,7 @@ public class TowerDefense extends JFrame implements Runnable{
 			
 			@Override
 			public void keyTyped(KeyEvent e) {
-				enemies.add(new Enemy(0, 0, fastest));
+				spawnEnemyWhenAvailable  = true;
 			}
 			
 			@Override
@@ -141,6 +147,12 @@ public class TowerDefense extends JFrame implements Runnable{
 	public void run() {
 		while (true){
 			try {
+				
+				if (spawnEnemyWhenAvailable){
+					enemies.add(new Enemy(0, 0, fastest));
+					spawnEnemyWhenAvailable = false;
+				}
+				
 				for (int i =0; i < enemies.size(); i++){
 					Enemy enemy = enemies.get(i);
 					enemy.move();

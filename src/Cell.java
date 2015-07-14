@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 
@@ -12,6 +13,7 @@ public class Cell implements Comparable<Cell>{
 	double gCost = Double.MAX_VALUE, hCost = Double.MAX_VALUE, fCost = Double.MAX_VALUE;
 	Cell parentCell;
 	Tower tower;
+	Point center;
 	//boolean hasTower = false;
 	
 	public Cell(int x, int y, int row, int col, int size) {
@@ -20,6 +22,7 @@ public class Cell implements Comparable<Cell>{
 		this.setRow(row);
 		this.setCol(col);
 		this.size = size;
+		center = new Point(x+size/2, y+size/2);
 	}
 	
 	public void draw(Graphics2D g){
@@ -29,8 +32,8 @@ public class Cell implements Comparable<Cell>{
 		g.setColor(Color.black);
 		g.drawRect(x, y, size, size);
 		
-		if (hasTower())
-			tower.draw(g);
+//		if (hasTower())
+//			tower.draw(g);
 		
 	}
 	

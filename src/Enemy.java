@@ -9,12 +9,12 @@ public class Enemy {
 	private List<Cell> currentPath;
 	private int x = 0, y = 0;
 	private int size = 20;
-	private int speed = 2;
+	private int speed = 5;
 	private Cell target;
 	static Cell finalCell;
 	private boolean finalCellActivated = false;
 	private int targetCounter = 0;
-	private boolean atEnd = false, dead = false;;
+	private boolean atEnd = false, dead = false;
 	
 	public Enemy(int x, int y, List<Cell> path){
 		this.setX(x);
