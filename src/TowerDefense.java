@@ -109,19 +109,17 @@ public class TowerDefense extends JFrame implements Runnable{
 			
 			@Override
 			public void keyTyped(KeyEvent e) {
-				spawnEnemyWhenAvailable  = true;
+				
 			}
 			
 			@Override
 			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
 				
 			}
 			
 			@Override
 			public void keyPressed(KeyEvent e) {
-				// TODO Auto-generated method stub
-				
+				spawnEnemyWhenAvailable  = true;
 			}
 		});
 		
